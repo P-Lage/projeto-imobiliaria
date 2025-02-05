@@ -8,9 +8,9 @@ url = 'https://raw.githubusercontent.com/alura-cursos/pandas-conhecendo-a-biblio
 dados = pd.read_csv(url, sep=';')
 print(dados)
 
-Visualização dos dados:
+#Visualização dos dados:
 
-    # .head() retorna as primeiras linhas da base, sendo o parâmetro nulo = 5 primeira linhas
+# .head() retorna as primeiras linhas da base, sendo o parâmetro nulo = 5 primeira linhas
 print(dados.head())
 
 # .tail() retorna as últimas linhas da base, sendo o parâmetro nulo = 5 primeira linhas
@@ -19,7 +19,7 @@ print(dados.tail())
 # type() verifica o tipo de dados da variável
 type(dados)
 
-Explorando as características gerais dos dados:
+# Explorando as características gerais dos dados:
 
 print(dados.shape)
 print(dados.columns)
@@ -87,3 +87,26 @@ df_preco_tipo = round(df.groupby(
     'Tipo')[['Valor']].mean().sort_values('Valor'), 2)
 df_preco_tipo.plot(kind='barh', figsize=(14, 10), color='purple')
 plt.show()
+
+
+# Determinando o percentual de cada tipo de imóvel
+
+## .value_counts() Retorna uma series com os valores referentes à coluna
+df.Tipo.value_counts()
+
+## Retorna a mesma series só que em porcentagem
+df.Tipo.value_counts(normalize=True)
+
+## .to_frame() converte para um DataFram
+df.Tipo.value_counts(normalize=True).to_frame()
+
+df.Tipo.value_counts(normalize=True).to_frame().sort_values('proportion')
+
+df_percentual_tipo = df.Tipo.value_counts(normalize=True).to_frame().sort_values('proportion')
+df_percentual_tipo.plot(kind='bar', figsize=(14, 10), color='green', xlabel = 'Tipos', ylabel = 'Percentual')
+plt.show()
+
+## Selecionando apenas apartamentos
+
+df = df.query("Tipo == 'Apartamento'")
+df.head()
