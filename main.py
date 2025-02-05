@@ -8,10 +8,9 @@ url = 'https://raw.githubusercontent.com/alura-cursos/pandas-conhecendo-a-biblio
 dados = pd.read_csv(url, sep=';')
 print(dados)
 
-"""
 Visualização dos dados:
 
-# .head() retorna as primeiras linhas da base, sendo o parâmetro nulo = 5 primeira linhas
+    # .head() retorna as primeiras linhas da base, sendo o parâmetro nulo = 5 primeira linhas
 print(dados.head())
 
 # .tail() retorna as últimas linhas da base, sendo o parâmetro nulo = 5 primeira linhas
@@ -27,7 +26,6 @@ print(dados.columns)
 print(dados.info())
 print(dados['Tipo'])
 print(dados[['Quartos', 'Valor']])
-
 
 
 # Realizando a análise exploratória dos dados
@@ -57,25 +55,35 @@ df_preco_tipo = round(dados.groupby(
     'Tipo')[['Valor']].mean().sort_values('Valor'), 2)
 df_preco_tipo.plot(kind='barh', figsize=(14, 10), color='purple')
 plt.show()
-"""
+
 
 # Removendo os imóveis comerciais
 
-dados.Tipo.unique().tolist()
+# repr retorna a representação "oficial" do NumPy
+repr(dados.Tipo.unique())
 
-imoveis = ['Quitinete', 'Casa', 'Conjunto Comercial/Sala', 'Apartamento',
-           'Casa de Condomínio', 'Prédio Inteiro', 'Flat', 'Loja/Salão',
-           'Galpão/Depósito/Armazém', 'Casa Comercial', 'Casa de Vila',
-           'Terreno Padrão', 'Box/Garagem', 'Loft', 'Loja Shopping/ Ct Comercial',
-           'Chácara', 'Loteamento/Condomínio', 'Sítio', 'Pousada/Chalé',
-                      'Studio', 'Hotel', 'Indústria']
+# Criando um array somente com imóveis comerciais
+imoveis_comerciais = ['Conjunto Comercial/Sala',
+                      'Prédio Inteiro', 'Loja/Salão',
+                      'Galpão/Depósito/Armazém',
+                      'Casa Comercial', 'Terreno Padrão',
+                      'Loja Shopping/ Ct Comercial',
+                      'Box/Garagem', 'Chácara',
+                      'Loteamento/Condomínio', 'Sítio',
+                      'Pousada/Chalé', 'Hotel', 'Indústria']
 
-# query() permite selecionar linhas de um DataFrame com base em uma condição específica
+# DataFrame com imóveis comerciais
+dados.query('@imoveis_comerciais in Tipo')
 
-# Seleciona os imóveis comerciais
-comerciais = dados.query('Tipo in @imoveis')
-print(comerciais)
+# DataFrame sem imóveis comerciais
+dados.query('@imoveis_comerciais not in Tipo')
 
-# Seleciona os imóveis residenciais (que não são comerciais)
-residenciais = dados.query('Tipo not in @imoveis')
-print(residenciais)
+df = dados.query('@imoveis_comerciais not in Tipo')
+df.head()
+
+repr(df.Tipo.unique())
+
+df_preco_tipo = round(df.groupby(
+    'Tipo')[['Valor']].mean().sort_values('Valor'), 2)
+df_preco_tipo.plot(kind='barh', figsize=(14, 10), color='purple')
+plt.show()
