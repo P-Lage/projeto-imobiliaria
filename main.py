@@ -98,11 +98,15 @@ df.Tipo.value_counts()
 df.Tipo.value_counts(normalize=True)
 
 ## .to_frame() converte para um DataFram
-df.Tipo.value_counts(normalize=True).to_frame()
+df_percentual_tipo = df.Tipo.value_counts(normalize=True).to_frame()
+print(df_percentual_tipo)
 
-df.Tipo.value_counts(normalize=True).to_frame().sort_values('proportion')
+## Alterando o nome da  coluna proportion para percentual
 
-df_percentual_tipo = df.Tipo.value_counts(normalize=True).to_frame().sort_values('proportion')
+df_percentual_tipo.rename(columns={'proportion': 'Percentuais'}, inplace=True)
+
+df_percentual_tipo = df_percentual_tipo.sort_values('Percentuais')
+
 df_percentual_tipo.plot(kind='bar', figsize=(14, 10), color='green', xlabel = 'Tipos', ylabel = 'Percentual')
 plt.show()
 
