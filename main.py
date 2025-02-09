@@ -155,3 +155,14 @@ df_1 = df[selecao_final]
 
 selecao_3 = (df['Quartos'] >= 2) & (df['Valor'] < 3000) & (df['Area'] > 70)
 df_2 = df[selecao_3]
+
+# Salvando os dados
+
+df.to_csv('dados_apartamentos.csv', sep=';', index=False)
+pd.read_csv('dados_apartamentos.csv', sep=';')
+
+df_1.to_csv('dados_apartamentos_1.csv', sep=';', index=False)
+pd.read_csv('dados_apartamentos_1.csv', sep=';')
+
+df_2.to_csv('dados_apartamentos_2.csv', sep=';', index=False)
+pd.read_csv('dados_apartamentos_2.csv', sep=';')
