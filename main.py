@@ -166,3 +166,33 @@ pd.read_csv('dados_apartamentos_1.csv', sep=';')
 
 df_2.to_csv('dados_apartamentos_2.csv', sep=';', index=False)
 pd.read_csv('dados_apartamentos_2.csv', sep=';')
+
+# Criando colunas numéricas
+
+url = 'https://raw.githubusercontent.com/alura-cursos/pandas-conhecendo-a-biblioteca/main/base-de-dados/aluguel.csv'
+dados = pd.read_csv(url, sep=';')
+dados.head()
+
+dados['Valor_por_mes'] = dados['Valor'] + dados['Condominio']
+dados.head()
+
+dados['Valor_por_ano'] = dados['Valor_por_mes'] * 12 + dados['IPTU']
+dados.head()
+
+# Criando colunas categóricas
+
+dados['Descrição'] = dados['Tipo'] + ', ' + dados['Bairro']
+dados.head()
+
+dados['Descrição'] = dados['Tipo'] + ' em ' + dados['Bairro'] + ' com ' + \
+        (dados['Quartos']).astype(str) + ' quarto(s) e ' + \
+        dados['Vagas'].astype(str) + ' vaga(s) de garagem.'
+dados.head()
+
+# Criando colunas binárias
+
+dados['Possui suites'] = dados['Suites'].apply(lambda x: 'Sim' if x > 0 else 'Não')
+dados.head()
+
+dados.to_csv('dados_completos.csv', sep=';', index=False)
+pd.read_csv('dados_completos.csv', sep=';')
