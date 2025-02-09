@@ -114,3 +114,30 @@ plt.show()
 
 df = df.query("Tipo == 'Apartamento'")
 df.head()
+
+## Tratando dados nulos
+
+df.isnull()
+
+## .sum() retorna a soma dos valores nulos
+df.isnull().sum()
+
+## .fillna(0) preenche os valores nulos com 0
+df = df.fillna(0)
+df.isnull().sum()
+## .dropna() exclui as linhas com valores nulos
+## .interpolate() preenche os valores nulos com a média dos valores anteriores e posteriores
+
+# Removendo registros com valores nulos
+
+registros_a_remover = df.query('Valor == 0 or Condominio == 0').index
+
+df.drop(registros_a_remover, axis=0, inplace=True)
+
+df.query('Valor == 0 or Condominio == 0').index
+
+df.Tipo.unique()
+
+df.drop(['Tipo'], axis=1, inplace=True)
+
+df.head()
