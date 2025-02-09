@@ -141,3 +141,17 @@ df.Tipo.unique()
 df.drop(['Tipo'], axis=1, inplace=True)
 
 df.head()
+
+# Aplicando filtros
+
+selecao_1 = df['Quartos'] == 1
+df[selecao_1]
+
+selecao_2 = df['Valor'] < 1200
+df[selecao_2]
+
+selecao_final = (selecao_1) & (selecao_2)
+df_1 = df[selecao_final]
+
+selecao_3 = (df['Quartos'] >= 2) & (df['Valor'] < 3000) & (df['Area'] > 70)
+df_2 = df[selecao_3]
