@@ -1,198 +1,119 @@
-# Importando os dados
-
+# Importando bibliotecas necessárias
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# .read_csv() retorna a leitura dos arquivos de texto que contém dados separados por vírgulas
+# ------------------------------
+# 1. CARREGAMENTO DOS DADOS
+# ------------------------------
+
+# Define a URL do dataset e carrega os dados em um DataFrame
 url = 'https://raw.githubusercontent.com/alura-cursos/pandas-conhecendo-a-biblioteca/main/base-de-dados/aluguel.csv'
 dados = pd.read_csv(url, sep=';')
-print(dados)
 
-#Visualização dos dados:
-
-# .head() retorna as primeiras linhas da base, sendo o parâmetro nulo = 5 primeira linhas
+# Exibe as primeiras e últimas linhas para inspeção inicial
+print("Primeiras 5 linhas do dataset:")
 print(dados.head())
-
-# .tail() retorna as últimas linhas da base, sendo o parâmetro nulo = 5 primeira linhas
+print("\nÚltimas 5 linhas do dataset:")
 print(dados.tail())
 
-# type() verifica o tipo de dados da variável
-type(dados)
+# ------------------------------
+# 2. ANÁLISE EXPLORATÓRIA INICIAL
+# ------------------------------
 
-# Explorando as características gerais dos dados:
-
-print(dados.shape)
-print(dados.columns)
+print("\nDimensões do DataFrame (linhas, colunas):", dados.shape)
+print("\nNomes das colunas:", dados.columns.tolist())
+print("\nTipos de dados e informações gerais:")
 print(dados.info())
-print(dados['Tipo'])
-print(dados[['Quartos', 'Valor']])
 
+# Análise estatística básica da coluna 'Valor'
+media_valor = round(dados['Valor'].mean(), 2)
+print(f"\nMédia dos valores de aluguel: R$ {media_valor}")
 
-# Realizando a análise exploratória dos dados
+# Agrupa dados por tipo de imóvel e calcula médias numéricas
+media_por_tipo = round(dados.groupby('Tipo').mean(numeric_only=True), 2)
+print("\nMédia de valores por tipo de imóvel:")
+print(media_por_tipo[['Valor']].sort_values('Valor'))
 
-colunasIniciais = dados.head()
-print(colunasIniciais)
+# Gera gráfico de barras horizontal para visualização
+df_preco_tipo = round(dados.groupby('Tipo')[['Valor']].mean().sort_values('Valor'), 2)
+df_preco_tipo.plot(kind='barh', figsize=(14, 10), color='purple', title='Média de Valores por Tipo de Imóvel')
+plt.show()
 
-# Arredondamento dos valores com round
+# ------------------------------
+# 3. LIMPEZA E FILTRAGEM DE DADOS
+# ------------------------------
 
-round(dados['Valor'].mean(), 2)
+# Define tipos de imóveis comerciais a serem removidos
+imoveis_comerciais = [
+    'Conjunto Comercial/Sala', 'Prédio Inteiro', 'Loja/Salão',
+    'Galpão/Depósito/Armazém', 'Casa Comercial', 'Terreno Padrão',
+    'Loja Shopping/ Ct Comercial', 'Box/Garagem', 'Chácara',
+    'Loteamento/Condomínio', 'Sítio', 'Pousada/Chalé', 'Hotel', 'Indústria'
+]
 
-# Método goupby()
-# Passando a coluna Tipo para a partir dela agrupar os dados
-# numeric_only=True para a média ser feita só nos valores numéricos
+# Filtra DataFrame para manter apenas imóveis residenciais
+df_residencial = dados.query('Tipo not in @imoveis_comerciais')
+print("\nTipos de imóveis após remoção dos comerciais:")
+print(df_residencial['Tipo'].unique())
 
-round(dados.groupby('Tipo').mean(numeric_only=True), 2)
+# Remove registros com valores inválidos (Valor ou Condomínio = 0)
+registros_invalidos = df_residencial.query('Valor == 0 or Condominio == 0').index
+df_residencial.drop(registros_invalidos, axis=0, inplace=True)
 
-# numeric_only=True excluído pois não há mais necessidade
+# ------------------------------
+# 4. ANÁLISE DE DISTRIBUIÇÃO
+# ------------------------------
 
-# Colchete duplo para criar um dataframe
-# sortt_values('coluna') para organizar os valores do menor para o maior
-round(dados.groupby('Tipo')[['Valor']].mean().sort_values('Valor'), 2)
+# Calcula percentual de cada categoria
+df_percentual = df_residencial['Tipo'].value_counts(normalize=True).to_frame()
+df_percentual.columns = ['Percentual']
 
-# Criando um gráfico para a visualização
-
-df_preco_tipo = round(dados.groupby(
-    'Tipo')[['Valor']].mean().sort_values('Valor'), 2)
-df_preco_tipo.plot(kind='barh', figsize=(14, 10), color='purple')
+# Gerar gráfico com os dados
+df_percentual.sort_values('Percentual').plot(kind='bar', figsize=(14, 10), color='green',
+                                            title='Distribuição Percentual por Categoria')
 plt.show()
 
 
-# Removendo os imóveis comerciais
+# ------------------------------
+# 5. APLICAÇÃO DE FILTROS
+# ------------------------------
 
-# repr retorna a representação "oficial" do NumPy
-repr(dados.Tipo.unique())
+# Filtro 1: Apartamentos com 1 quarto e valor < R$ 1200
+filtro_1 = (df_residencial['Quartos'] == 1) & (df_residencial['Valor'] < 1200)
+df_filtro1 = df_residencial[filtro_1]
 
-# Criando um array somente com imóveis comerciais
-imoveis_comerciais = ['Conjunto Comercial/Sala',
-                      'Prédio Inteiro', 'Loja/Salão',
-                      'Galpão/Depósito/Armazém',
-                      'Casa Comercial', 'Terreno Padrão',
-                      'Loja Shopping/ Ct Comercial',
-                      'Box/Garagem', 'Chácara',
-                      'Loteamento/Condomínio', 'Sítio',
-                      'Pousada/Chalé', 'Hotel', 'Indústria']
+# Filtro 2: Imóveis com 2+ quartos, valor < R$ 3000 e área > 70m²
+filtro_2 = (df_residencial['Quartos'] >= 2) & (df_residencial['Valor'] < 3000) & (df_residencial['Area'] > 70)
+df_filtro2 = df_residencial[filtro_2]
 
-# DataFrame com imóveis comerciais
-dados.query('@imoveis_comerciais in Tipo')
+# ------------------------------
+# 6. CRIAÇÃO DE NOVAS COLUNAS
+# ------------------------------
 
-# DataFrame sem imóveis comerciais
-dados.query('@imoveis_comerciais not in Tipo')
+# Calcula custo total mensal (aluguel + condomínio)
+df_residencial['Custo_Mensal'] = df_residencial['Valor'] + df_residencial['Condominio']
 
-df = dados.query('@imoveis_comerciais not in Tipo')
-df.head()
+# Calcula custo anual total (incluindo IPTU)
+df_residencial['Custo_Anual'] = (df_residencial['Custo_Mensal'] * 12) + df_residencial['IPTU']
 
-repr(df.Tipo.unique())
+# Cria descrição textual para cada imóvel
+df_residencial['Descricao'] = (
+    df_residencial['Tipo'] + ' em ' + df_residencial['Bairro'] + 
+    ' com ' + df_residencial['Quartos'].astype(str) + 
+    ' quarto(s) e ' + df_residencial['Vagas'].astype(str) + ' vaga(s).'
+)
 
-df_preco_tipo = round(df.groupby(
-    'Tipo')[['Valor']].mean().sort_values('Valor'), 2)
-df_preco_tipo.plot(kind='barh', figsize=(14, 10), color='purple')
-plt.show()
+# Cria coluna binária indicando presença de suíte
+df_residencial['Tem_Suite'] = df_residencial['Suites'].apply(lambda x: 'Sim' if x > 0 else 'Não')
 
+# ------------------------------
+# 7. SALVAMENTO DOS RESULTADOS
+# ------------------------------
 
-# Determinando o percentual de cada tipo de imóvel
+# Salva DataFrames processados em arquivos CSV
+df_residencial.to_csv('dados_residenciais.csv', sep=';', index=False)
+df_filtro1.to_csv('filtro_apartamentos_economicos.csv', sep=';', index=False)
+df_filtro2.to_csv('filtro_imoveis_premium.csv', sep=';', index=False)
 
-## .value_counts() Retorna uma series com os valores referentes à coluna
-df.Tipo.value_counts()
-
-## Retorna a mesma series só que em porcentagem
-df.Tipo.value_counts(normalize=True)
-
-## .to_frame() converte para um DataFram
-df_percentual_tipo = df.Tipo.value_counts(normalize=True).to_frame()
-print(df_percentual_tipo)
-
-## Alterando o nome da  coluna proportion para percentual
-
-df_percentual_tipo.rename(columns={'proportion': 'Percentuais'}, inplace=True)
-
-df_percentual_tipo = df_percentual_tipo.sort_values('Percentuais')
-
-df_percentual_tipo.plot(kind='bar', figsize=(14, 10), color='green', xlabel = 'Tipos', ylabel = 'Percentual')
-plt.show()
-
-## Selecionando apenas apartamentos
-
-df = df.query("Tipo == 'Apartamento'")
-df.head()
-
-## Tratando dados nulos
-
-df.isnull()
-
-## .sum() retorna a soma dos valores nulos
-df.isnull().sum()
-
-## .fillna(0) preenche os valores nulos com 0
-df = df.fillna(0)
-df.isnull().sum()
-## .dropna() exclui as linhas com valores nulos
-## .interpolate() preenche os valores nulos com a média dos valores anteriores e posteriores
-
-# Removendo registros com valores nulos
-
-registros_a_remover = df.query('Valor == 0 or Condominio == 0').index
-
-df.drop(registros_a_remover, axis=0, inplace=True)
-
-df.query('Valor == 0 or Condominio == 0').index
-
-df.Tipo.unique()
-
-df.drop(['Tipo'], axis=1, inplace=True)
-
-df.head()
-
-# Aplicando filtros
-
-selecao_1 = df['Quartos'] == 1
-df[selecao_1]
-
-selecao_2 = df['Valor'] < 1200
-df[selecao_2]
-
-selecao_final = (selecao_1) & (selecao_2)
-df_1 = df[selecao_final]
-
-selecao_3 = (df['Quartos'] >= 2) & (df['Valor'] < 3000) & (df['Area'] > 70)
-df_2 = df[selecao_3]
-
-# Salvando os dados
-
-df.to_csv('dados_apartamentos.csv', sep=';', index=False)
-pd.read_csv('dados_apartamentos.csv', sep=';')
-
-df_1.to_csv('dados_apartamentos_1.csv', sep=';', index=False)
-pd.read_csv('dados_apartamentos_1.csv', sep=';')
-
-df_2.to_csv('dados_apartamentos_2.csv', sep=';', index=False)
-pd.read_csv('dados_apartamentos_2.csv', sep=';')
-
-# Criando colunas numéricas
-
-url = 'https://raw.githubusercontent.com/alura-cursos/pandas-conhecendo-a-biblioteca/main/base-de-dados/aluguel.csv'
-dados = pd.read_csv(url, sep=';')
-dados.head()
-
-dados['Valor_por_mes'] = dados['Valor'] + dados['Condominio']
-dados.head()
-
-dados['Valor_por_ano'] = dados['Valor_por_mes'] * 12 + dados['IPTU']
-dados.head()
-
-# Criando colunas categóricas
-
-dados['Descrição'] = dados['Tipo'] + ', ' + dados['Bairro']
-dados.head()
-
-dados['Descrição'] = dados['Tipo'] + ' em ' + dados['Bairro'] + ' com ' + \
-        (dados['Quartos']).astype(str) + ' quarto(s) e ' + \
-        dados['Vagas'].astype(str) + ' vaga(s) de garagem.'
-dados.head()
-
-# Criando colunas binárias
-
-dados['Possui suites'] = dados['Suites'].apply(lambda x: 'Sim' if x > 0 else 'Não')
-dados.head()
-
-dados.to_csv('dados_completos.csv', sep=';', index=False)
-pd.read_csv('dados_completos.csv', sep=';')
+print("\nProcesso concluído. Arquivos salvos:")
+print("- dados_residenciais.csv\n- filtro_apartamentos_economicos.csv\n- filtro_imoveis_premium.csv")
